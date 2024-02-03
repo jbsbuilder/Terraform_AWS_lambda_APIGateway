@@ -28,6 +28,12 @@ resource "aws_iam_role" "lambda-iam" {
   EOF
 }
 
+data "archive_file" "lambda-zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/lambda"
+  output_path = "${path.module}/lambda.zip"
+}
+
 resource "aws_lambda_function" "lambda" {
   filename         = "lambda.zip"
   function_name    = "lambda-fuction"
@@ -42,13 +48,13 @@ resource "aws_apigatewayv2_api" "lambda-api" {
   protocol_type = "HTTP"
 }
 
-resource "aws_apigateway2_stage" "lambda-stage" {
+resource "aws_apigatewayv2_stage" "lambda-stage" {
   api_id      = aws_apigatewayv2_api.lambda-api.id
   name        = "$default"
   auto_deploy = true
 }
 
-resource "aws_apigateway_integration" "lambda-integration" {
+resource "aws_apigatewayv2_integration" "lambda-integration" {
   api_id               = aws_apigatewayv2_api.lambda-api.id
   integration_type     = "AWS_PROXY"
   integration_method   = "POST"
@@ -56,10 +62,10 @@ resource "aws_apigateway_integration" "lambda-integration" {
   passthrough_behavior = "WHEN_NO_MATCH"
 }
 
-resource "aws_apigateway2_route" "lambda_route" {
+resource "aws_apigatewayv2_route" "lambda_route" {
   api_id    = aws_apigatewayv2_api.lambda-api.id
   route_key = "GET /{proxy+}"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda-ingtegration.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda-integration.id}"
 }
 
 resource "aws_lambda_permission" "api-gw" {
