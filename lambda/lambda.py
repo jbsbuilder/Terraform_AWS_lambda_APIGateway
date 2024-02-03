@@ -2,6 +2,6 @@ import json
 
 def lamda_handler(event, context):
     return {
-        'statusCode': 200,
-        'body': json.dumps('Hello from Lambda!')
+        'statuscode': 200,
+        'body': json.dumps(event['headers']['x-Forwarded-For'])
     }
